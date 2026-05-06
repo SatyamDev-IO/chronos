@@ -8,6 +8,9 @@ import com.example.chronos.exception.NotFoundException;
 import com.example.chronos.exception.UnauthorizedException;
 import com.example.chronos.repository.JobRepository;
 import com.example.chronos.repository.JobRunRepository;
+import com.example.chronos.worker.JobWorker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,6 +29,8 @@ public class JobService {
 
     @Autowired
     private JobRunRepository jobRunRepository;
+
+    private static final Logger log = LoggerFactory.getLogger(JobWorker.class);
 
     public JobEntity createJob(CreateJobRequest request) {
 
@@ -65,6 +70,7 @@ public class JobService {
         job.setStatus(Status.CANCELLED);
         job.setUpdatedAt(LocalDateTime.now());
         jobRepository.save(job);
+        log.info("Job cancelled: id={}, user={}", job.getId(), job.getCreatedBy());
     }
 
     public JobEntity rescheduleJob(Long id, String  newTime) {
@@ -75,7 +81,11 @@ public class JobService {
         job.setNextRunTime(parsedTime);
         job.setStatus(Status.SCHEDULED);
         job.setUpdatedAt(LocalDateTime.now());
-        return jobRepository.save(job);
+        JobEntity savedJob = jobRepository.save(job);
+
+        log.info("Job rescheduled: id={}, nextRunTime={}", savedJob.getId(), savedJob.getNextRunTime());
+
+        return savedJob;
     }
 
     private JobEntity getAuthorizedJob(Long jobId) {
