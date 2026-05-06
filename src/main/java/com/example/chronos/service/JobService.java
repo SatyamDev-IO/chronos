@@ -30,7 +30,7 @@ public class JobService {
     @Autowired
     private JobRunRepository jobRunRepository;
 
-    private static final Logger log = LoggerFactory.getLogger(JobWorker.class);
+    private static final Logger log = LoggerFactory.getLogger(JobService.class);
 
     public JobEntity createJob(CreateJobRequest request) {
 
@@ -67,10 +67,11 @@ public class JobService {
 
     public void cancelJob(Long id) {
         JobEntity job = getAuthorizedJob(id);
+        Status previousStatus = job.getStatus();
         job.setStatus(Status.CANCELLED);
         job.setUpdatedAt(LocalDateTime.now());
         jobRepository.save(job);
-        log.info("Job cancelled: id={}, user={}", job.getId(), job.getCreatedBy());
+        log.info("Job cancelled: id={}, previousStatus={}, user={}", job.getId(), previousStatus, job.getCreatedBy());
     }
 
     public JobEntity rescheduleJob(Long id, String  newTime) {

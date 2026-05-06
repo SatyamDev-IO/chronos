@@ -79,7 +79,7 @@ public class JobWorker {
 
                 job.setStatus(Status.SCHEDULED);
 
-                log.info("Recurring job {} rescheduled", job.getId(), job.getNextRunTime());
+                log.info("Recurring job {} rescheduled for {}", job.getId(), job.getNextRunTime());
 
             } else {
                 job.setStatus(Status.SUCCESS);
